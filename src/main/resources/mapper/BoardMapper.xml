@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--mapper의 namespace를 지정
+매퍼와 xml의 쿼리를 매칭해서 사용하려면 매퍼 인터페이스 경로와 메서드의 이름과 쿼리의 이름이
+같아야 한다.
+-> BoardMapper 인터페이스에 있는 selectBoardList에서 selectBoardList라는 이름의 쿼리와
+매핑하기 위해서는 그 전체 경로인 board.mapper.BoardMapper.selectBoardList가 필요
+쿼리의 아이디를 지정할 때, 각각의 쿼리에 전체 경로를 일일이 명시하는 것은 중복된 작업이다.
+namespace에서 공통적으로 사용하는 경로를 지정해서 namespace와 쿼리 아이디가 합쳐져서
+호출되게끔 한다.
+-->
+<mapper namespace="board.mapper.BoardMapper">
+<!-- <select> 태그를 이용하여 select 쿼리임을 나타냄
+* id: 해당 쿼리의 아이디를 지정해 준다.
+    여기서는 selectBoardList라는 아이디를 사용하고 있다.
+* resultType: 이 쿼리의 실행 결과를 앞에서 만든 DTO인 BoardDto에 반환되는 것을 의미
+    여기서는 사용되지 않았지만, parameterType이라는 속성도 있음
+    parameterTyper과 resultType을 명시할 때는 해당 클래스의 패키지를 포함하여 지정해야 된다.
+    여기서 BoardDto를 사용하기 위해서 전체 경로인 board.dto.BoardDto를 명시함
+* mapper에서는 세미콜론(;)을 사용하지 않으므로 주의!
+-->
+    <select id="selectBoardList" resultType="board.model.entity.BoardEntity">
+            SELECT *
+            FROM T_BOARD
+            WHERE
+                DELETED = 0
+            ORDER BY BOARD_IDX DESC
+    </select>
+    <insert id="insertBoard" parameterType="board.model.entity.BoardEntity">
+        INSERT INTO T_BOARD
+                (
+                TITLE,
+                CONTENTS,
+                CREATOR_ID
+                )
+                VALUES
+                (
+                #{title},
+                #{contents},
+                'admin'
+                )
+    </insert>
+    <select id="selectBoardDetail" parameterType="int" resultType="board.model.entity.BoardEntity">
+        SELECT
+            BOARD_IDX,
+            TITLE,
+            CONTENTS,
+            CREATOR_ID
+        FROM T_BOARD
+        WHERE
+            BOARD_IDX = #{boardIdx} AND DELETED = 0
+    </select>
+    <update id="updateBoard" parameterType="board.model.entity.BoardEntity">
+        UPDATE
+            T_BOARD
+        SET
+            TITLE = #{title},
+            CONTENTS = #{contents},
+            UPDATED_DATETIME = Now(),
+            UPDATER_ID = #{updaterId}
+        WHERE
+            BOARD_IDX = #{boardIdx}
+    </update>
+    <update id="deleteBoard" parameterType="int">
+        UPDATE
+            T_BOARD
+        SET
+            DELETED = 1
+        WHERE
+            BOARD_IDX = #{boardIdx}
+    </update>
+</mapper>
+<!--#{} -->
+<!--        MyBatis 문법임. #{}은 DB의 SQL문법이 아니라, parameterType으로 넘어온-->
+<!--        BoardEntity 객체에서 #{}안에 있는 변수명과 일치하는 property를 찾아서-->
+<!--        넣어주는 역할임.-->
+<!--        BoardEntity에 써준 그대로 #{}안에 넣어주어야 함.(대소문자 구분됨!!!)-->
+
+
+<!--[SQL] update set문 : DB값 수정하기-->
+<!--UPDATE 테이블명-->
+<!--SET 수정되어야 할 컬럼명 = 수정되기를 원하는 새로운 값-->
+<!--WHERE 변경 데이터 조건 컬럼 = 선택 조건 값;-->
+
